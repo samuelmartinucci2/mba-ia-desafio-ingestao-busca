@@ -36,13 +36,18 @@ Para executar este projeto, você precisará das seguintes ferramentas instalada
    ```
    Abra o arquivo `.env` e configure as seguintes variáveis:
    - **Chaves de API**: Adicione sua `OPENAI_API_KEY` ou `GOOGLE_API_KEY`.
-   - **Configuração do Banco**: Com base no `docker-compose.yml`, utilize os seguintes valores:
-     - `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/rag`
+   - **Configuração do Banco**:
+     - `POSTGRES_USER=postgres`
+     - `POSTGRES_PASSWORD=sua_senha_segura`
+     - `POSTGRES_DB=rag`
      - `PG_VECTOR_COLLECTION_NAME=pdf_chunks`
    - **Modelos e Arquivos**:
      - `GOOGLE_EMBEDDING_MODEL=models/gemini-embedding-001`
-     - `GOOGLE_CHAT_MODEL=gemini-1.5-flash`
+     - `GOOGLE_CHAT_MODEL=models/gemini-flash-latest`
      - `PDF_PATH=document.pdf`
+
+> [!TIP]
+> Para alterar a senha do banco após a primeira execução, edite o `.env` e reinicie com `docker-compose down -v && docker-compose up -d` para limpar os volumes antigos e aplicar a nova credencial.
 
 5. **Infraestrutura**:
    Suba o banco de dados PostgreSQL com pgVector:
@@ -60,9 +65,13 @@ python src/ingest.py
 *Nota: O script de ingestão agora processa os documentos em pequenos lotes com intervalos de tempo para evitar erros de cota (429) comuns no nível gratuito das APIs.*
 
 ### 2. Busca e Chat
-Para iniciar o chat interativo no terminal e conversar com o conteúdo do PDF:
+Para iniciar o chat interativo no terminal:
 ```bash
 python src/chat.py
+```
+Para fazer uma pergunta única e sair:
+```bash
+python src/chat.py "Sua pergunta aqui entre aspas"
 ```
 O chat buscará os 10 fragmentos mais relevantes do PDF para gerar cada resposta.
 
