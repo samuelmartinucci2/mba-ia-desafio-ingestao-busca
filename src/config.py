@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     GOOGLE_EMBEDDING_MODEL: str = "models/gemini-embedding-001"
     GOOGLE_CHAT_MODEL: str = "models/gemini-flash-latest"
     
-    # Database (Individual fields for Docker and security)
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "rag"
+    # Database (Mandatory fields - application will fail if not provided in .env)
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5432"
     

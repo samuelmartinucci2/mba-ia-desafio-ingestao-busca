@@ -36,15 +36,18 @@ Para executar este projeto, você precisará das seguintes ferramentas instalada
    ```
    Abra o arquivo `.env` e configure as seguintes variáveis:
    - **Chaves de API**: Adicione sua `OPENAI_API_KEY` ou `GOOGLE_API_KEY`.
-   - **Configuração do Banco**:
-     - `POSTGRES_USER=postgres`
-     - `POSTGRES_PASSWORD=sua_senha_segura`
-     - `POSTGRES_DB=rag`
+   - **Configuração do Banco (Obrigatório)**:
+     - `POSTGRES_USER` (Ex: `admin`)
+     - `POSTGRES_PASSWORD` (Ex: `senha_segura_123`)
+     - `POSTGRES_DB` (Ex: `rag_db`)
      - `PG_VECTOR_COLLECTION_NAME=pdf_chunks`
    - **Modelos e Arquivos**:
      - `GOOGLE_EMBEDDING_MODEL=models/gemini-embedding-001`
      - `GOOGLE_CHAT_MODEL=models/gemini-flash-latest`
      - `PDF_PATH=document.pdf`
+
+> [!IMPORTANT]
+> O projeto não iniciará se as credenciais do banco (`POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`) não forem definidas no `.env`. Isso evita o uso de senhas padrão e previne alertas de segurança.
 
 > [!TIP]
 > Para alterar a senha do banco após a primeira execução, edite o `.env` e reinicie com `docker-compose down -v && docker-compose up -d` para limpar os volumes antigos e aplicar a nova credencial.
