@@ -1,6 +1,7 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+from pydantic import computed_field
 
 class Settings(BaseSettings):
     # API Keys
@@ -12,8 +13,23 @@ class Settings(BaseSettings):
     GOOGLE_EMBEDDING_MODEL: str = "models/gemini-embedding-001"
     GOOGLE_CHAT_MODEL: str = "models/gemini-flash-latest"
     
-    # Database
-    DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/rag"
+    # Database (Individual fields for Docker and security)
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "rag"
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: str = "5432"
+    
+    # Optional full URL (overrides individual fields if provided)
+    DB_URL_OVERRIDE: Optional[str] = None
+    
+    @computed_field
+    @property
+    def DATABASE_URL(self) -> str:
+        if self.DB_URL_OVERRIDE:
+            return self.DB_URL_OVERRIDE
+        return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    
     PG_VECTOR_COLLECTION_NAME: str = "pdf_chunks"
     
     # Files
