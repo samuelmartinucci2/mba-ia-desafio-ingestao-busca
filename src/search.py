@@ -1,19 +1,20 @@
 import os
-from dotenv import load_dotenv
 from langchain_postgres import PGVector
 from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5432/rag")
-COLLECTION_NAME = os.getenv("PG_VECTOR_COLLECTION_NAME", "pdf_chunks")
+from config import settings
 
 def get_embeddings():
-    if os.getenv("OPENAI_API_KEY"):
-        return OpenAIEmbeddings(model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"))
-    elif os.getenv("GOOGLE_API_KEY"):
-        return GoogleGenerativeAIEmbeddings(model=os.getenv("GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-001"))
+    if settings.OPENAI_API_KEY:
+        return OpenAIEmbeddings(
+            model=settings.OPENAI_EMBEDDING_MODEL,
+            api_key=settings.OPENAI_API_KEY
+        )
+    elif settings.GOOGLE_API_KEY:
+        return GoogleGenerativeAIEmbeddings(
+            model=settings.GOOGLE_EMBEDDING_MODEL,
+            google_api_key=settings.GOOGLE_API_KEY
+        )
     else:
         raise ValueError("Neither OPENAI_API_KEY nor GOOGLE_API_KEY found in environment.")
 
@@ -22,8 +23,8 @@ def search_documents(query, k=10):
     
     vector_store = PGVector(
         embeddings=embeddings,
-        collection_name=COLLECTION_NAME,
-        connection=DATABASE_URL,
+        collection_name=settings.PG_VECTOR_COLLECTION_NAME,
+        connection=settings.DATABASE_URL,
         use_jsonb=True,
     )
 

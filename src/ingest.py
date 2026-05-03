@@ -1,38 +1,37 @@
 import os
-from dotenv import load_dotenv
+import time
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_postgres import PGVector
 from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
-load_dotenv()
-
-PDF_PATH = os.getenv("PDF_PATH") or "document.pdf"
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5432/rag")
-COLLECTION_NAME = os.getenv("PG_VECTOR_COLLECTION_NAME", "pdf_chunks")
+from config import settings
 
 def get_embeddings():
-    if os.getenv("OPENAI_API_KEY"):
+    if settings.OPENAI_API_KEY:
         print("Using OpenAI Embeddings")
-        return OpenAIEmbeddings(model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"))
-    elif os.getenv("GOOGLE_API_KEY"):
+        return OpenAIEmbeddings(
+            model=settings.OPENAI_EMBEDDING_MODEL, 
+            api_key=settings.OPENAI_API_KEY
+        )
+    elif settings.GOOGLE_API_KEY:
         print("Using Google Generative AI Embeddings")
-        return GoogleGenerativeAIEmbeddings(model=os.getenv("GOOGLE_EMBEDDING_MODEL", "models/gemini-embedding-001"))
+        return GoogleGenerativeAIEmbeddings(
+            model=settings.GOOGLE_EMBEDDING_MODEL, 
+            google_api_key=settings.GOOGLE_API_KEY
+        )
     else:
-        raise ValueError("Neither OPENAI_API_KEY nor GOOGLE_API_KEY found in environment. Please set one of them in your .env file.")
-
-import time
+        raise ValueError("Neither OPENAI_API_KEY nor GOOGLE_API_KEY found in environment.")
 
 def ingest_pdf():
-    if not os.path.exists(PDF_PATH):
-        print(f"Error: PDF file not found at {PDF_PATH}")
+    if not os.path.exists(settings.PDF_PATH):
+        print(f"Error: PDF file not found at {settings.PDF_PATH}")
         return
 
-    print(f"Starting ingestion for: {PDF_PATH}")
-    loader = PyPDFLoader(PDF_PATH)
+    print(f"Starting ingestion for: {settings.PDF_PATH}")
+    loader = PyPDFLoader(settings.PDF_PATH)
     documents = loader.load()
-    print(f"Loaded {len(documents)} pages from {PDF_PATH}")
+    print(f"Loaded {len(documents)} pages from {settings.PDF_PATH}")
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
@@ -47,12 +46,12 @@ def ingest_pdf():
         
         vector_store = PGVector(
             embeddings=embeddings,
-            collection_name=COLLECTION_NAME,
-            connection=DATABASE_URL,
+            collection_name=settings.PG_VECTOR_COLLECTION_NAME,
+            connection=settings.DATABASE_URL,
             use_jsonb=True,
         )
 
-        print(f"Adding {len(chunks)} chunks to pgVector (database: {DATABASE_URL}, collection: {COLLECTION_NAME})...")
+        print(f"Adding {len(chunks)} chunks to pgVector (database: {settings.DATABASE_URL}, collection: {settings.PG_VECTOR_COLLECTION_NAME})...")
         
         batch_size = 5
         delay = 10
@@ -70,7 +69,6 @@ def ingest_pdf():
         
     except Exception as e:
         print(f"An error occurred during ingestion: {e}")
-
 
 if __name__ == "__main__":
     ingest_pdf()

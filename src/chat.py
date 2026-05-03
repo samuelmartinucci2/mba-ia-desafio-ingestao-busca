@@ -1,16 +1,20 @@
 import os
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from search import search_prompt
-
-load_dotenv()
+from config import settings
 
 def get_llm():
-    if os.getenv("OPENAI_API_KEY"):
-        return ChatOpenAI(model=os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini"))
-    elif os.getenv("GOOGLE_API_KEY"):
-        return ChatGoogleGenerativeAI(model=os.getenv("GOOGLE_CHAT_MODEL", "models/gemini-flash-latest"))
+    if settings.OPENAI_API_KEY:
+        return ChatOpenAI(
+            model=settings.OPENAI_CHAT_MODEL,
+            api_key=settings.OPENAI_API_KEY
+        )
+    elif settings.GOOGLE_API_KEY:
+        return ChatGoogleGenerativeAI(
+            model=settings.GOOGLE_CHAT_MODEL,
+            google_api_key=settings.GOOGLE_API_KEY
+        )
     else:
         raise ValueError("Neither OPENAI_API_KEY nor GOOGLE_API_KEY found in environment.")
 
